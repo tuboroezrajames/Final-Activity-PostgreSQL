@@ -1,0 +1,182 @@
+--creating table investment2
+
+create table investment2 (market varchar (50),
+						 funding_total_usd numeric,
+						 status varchar (20),
+						 country_code varchar (10),
+						 founded_year numeric,
+						 seed numeric,
+						 venture numeric,
+						 equity_crowdfunding numeric,
+						 undisclosed numeric,
+						 convertible_note numeric,
+						 debt_fincing numeric,
+						 private_equity numeric
+
+)
+
+
+/*
+Task 1
+
+Prepare the dataset for the analysis by creating a new table selecting 
+the records where the market is financial services. 
+Keep in mind that the values in this column are misspelled.*/
+
+select * from investment2
+where market like '%Service%'
+
+select * from investment2
+where market = 'FincialServices'
+
+create table new_market as select * from investment2
+where market = 'FincialServices'
+
+
+select * from new_market
+
+--update spelling
+
+update new_market
+set market = 'Financial Services'
+where market = 'FincialServices'
+
+--handling duplicate from the table
+
+select funding_total_usd,status,country_code,founded_year,seed,venture,equity_crowdfunding,undisclosed,convertible_note,debt_fincing,private_equity from new_market
+group by 1,2,3,4,5,6,7,8,9,10,11
+having count(*)>1
+
+
+select * from new_market
+where funding_total_usd= 150000 and status='operating' and country_code = 'USA' and founded_year = 2013 and seed = 150000
+
+
+delete from new_market
+where funding_total_usd= 150000 and status='operating' and country_code = 'USA' and founded_year = 2013 and seed = 150000
+
+insert into new_market(market,funding_total_usd,status,country_code,founded_year,seed,venture,equity_crowdfunding,undisclosed,convertible_note,debt_fincing,private_equity)
+values ('Financial Services',150000,'operating','USA',2013,150000,0,0,0,0,0,0)
+
+
+/*
+Task 2
+
+Provide descriptive analytics that presents the number of observations 
+of companies operating in financial services and their average, minimum, 
+and maximum seed funding.*/
+
+
+select * from new_market
+
+--Observations of companies operating in financial services.
+
+select count(status) as operating_companies_count from new_market
+where status = 'operating'
+
+
+--average, minimum, and maximum seed funding
+
+select round(avg(seed),2) as average_seed from new_market;
+
+select min(seed)as minimum_seed from new_market;
+
+select max(seed) as maximum_seed from new_market;
+
+
+
+/*
+Task 3
+
+Aware of the reality that equity crowdfunding is a bit rare in financial services,
+determine whether or not there has been a previous instance where a startup
+offering financial services received equity crowdfunding. If there was, provide
+details of the company, such as the country it operates in, the year it was
+founded, its status (whether or not it is still operating), and the amount of 
+equity crowdfunding it acquired*/
+
+
+select * from new_market
+where equity_crowdfunding <> 0
+
+
+
+/*
+Task 4
+
+Determine whether or not a significant outlier in terms of total funding (USD)
+exists among companies that offer financial services.
+An outlier is an extremely high or low value. Provide details about this outlier, 
+such as its country, status, year founded, and total funding (USD).*/
+
+--creating zscore
+
+select funding_total_usd,venture,equity_crowdfunding,undisclosed,convertible_note,debt_fincing,private_equity,
+(funding_total_usd-avg(funding_total_usd) over ()) /
+stddev (funding_total_usd)over() as zscore from new_market
+
+																											
+--determining outlier using zscore
+
+select * from (select funding_total_usd,venture,equity_crowdfunding,undisclosed,convertible_note,debt_fincing,private_equity,
+			   (funding_total_usd-avg(funding_total_usd) over ()) /
+				stddev (funding_total_usd)over() as zscore from new_market ) as outlier 
+				where zscore > 2.576 or zscore <-2.576
+
+
+
+
+
+
+
+/*
+Task 5
+
+Excluding the significant outlier, provide insights on the company regarding
+the usual financing sources for businesses that offer financial services.
+Export your data from SQL to MS Excel, and create a data visualization that
+presents the average funds acquired from financing sources such as equity
+crowd-sourcing, undisclosed sources, convertible notes, debt financing,
+and private equity*/
+
+delete from new_market 
+where funding_total_usd = 725000000
+
+select * from new_market
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
